@@ -4,35 +4,6 @@ extern main
 section .text
 bits 32
 start:
-    ;;;;;; PAGING ;;;;;;;
-    ; map first PTD entry to PT table
-    mov eax, pt_table
-    or eax, 0b11 ; present + writable
-    mov [ptd_table], eax
-
-    ; map each P1 entry to a 4KB page
-    mov ecx, 0         ; counter variable
-
-.map_pt_table:
-    ; map ecx-th PT entry to a huge page that starts at address 4KB*ecx
-    mov eax, 0x1000    ; 4KB
-    mul ecx            ; start address of ecx-th page
-    or eax, 0b00000011 ; present + writable
-    mov [pt_table + ecx * 4], eax ; map ecx-th entry
-
-    inc ecx            ; increase counter   
-    cmp ecx, 1024      ; if counter == 1024, the whole P1 table is mapped   
-    jne .map_pt_table  ; else map the next entry    
-
-    ; move page table address to cr3
-    mov eax, ptd_table
-    mov cr3, eax
-
-    ; enable paging
-    mov eax, cr0
-    or eax, 1 << 31
-    mov cr0, eax
-
     ;;;;;; GDT ;;;;;;;
     lgdt [gdt_descriptor]
     mov ax, DATA_SEG
@@ -43,26 +14,9 @@ start:
     mov gs, ax
 
     ;;;;;; STACK ;;;;;;;
-    mov esp, stack_top
- 
-    mov word [0xb8000], 0x0248 ; H
-    mov word [0xb8002], 0x0365 ; e
-    mov word [0xb8004], 0x046c ; l
-    mov word [0xb8006], 0x056c ; l
-    mov word [0xb8008], 0x066f ; o
+    mov esp, stack_top 
     call main
     hlt
-
-
-; Paging
-section .bss ; block started by symbol automatically set to zero by linker
-
-align 4096
-
-pt_table:
-    resb 4096
-ptd_table:
-    resb 4096
 
 section .rodata
 gdt_start: ; don't remove the labels, they're needed to compute sizes and jumps
