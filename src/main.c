@@ -12,7 +12,7 @@ static inline void halt(void){
 int main(void){
     screen_start();
     uartinit(); 
-    printk("Hello World, QuakeOS!\n"); 
+    printk("Hello World, DoomOS!\n"); 
     halt();
 }
 
