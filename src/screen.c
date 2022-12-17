@@ -18,7 +18,7 @@ void write_cute_str(int x, int y, char* s) {
   int j = 0;
   for (int i = 0; *(s+i) != 0; i++) {
     char c = *(s+i);
-    write_char(x + i, y, c, 2 + (j%5));
+    write_char(x + i, y, c, 2 + (j%4));
     j++;
     if (c == ' ') {
       j = 0;
@@ -34,7 +34,7 @@ void write_str(int x, int y, char* s) {
 
 void screen_start() {
   clear_screen();
-  write_cute_str(30, 1, "Hello World, QuakeOS!");
+  write_cute_str(30, 1, "Hello World, DoomOS!");
   write_str(30, 2, "A Didatic OS.");
-  write_str(0, 4, "Learning about Operating Systems and computers by running Quake.");
+  write_str(0, 4, "Learning about Operating Systems and computers by running Doom.");
 }
