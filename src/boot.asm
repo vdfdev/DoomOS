@@ -1,5 +1,5 @@
 global start
-extern main
+extern kernel_main
 
 section .text
 bits 32
@@ -15,7 +15,7 @@ start:
 
     ;;;;;; STACK ;;;;;;;
     mov esp, stack_top 
-    call main
+    call kernel_main
     hlt
 
 section .rodata

@@ -9,10 +9,10 @@ static inline void halt(void){
     asm volatile("hlt" : : );
 }
 
-int main(void){
+void kernel_main(unsigned int* kernel_paging){
     screen_start();
     uartinit(); 
-    printk("Hello World, DoomOS!\n"); 
+    printk("Hello World, DoomOS!\n");
     halt();
 }
 
