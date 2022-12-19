@@ -1,9 +1,12 @@
 global start
 extern kernel_main
+extern paging_ptr
 
 section .text
 bits 32
 start:
+    mov eax, paging
+    mov [paging_ptr], eax
     ;;;;;; GDT ;;;;;;;
     lgdt [gdt_descriptor]
     mov ax, DATA_SEG
@@ -17,6 +20,14 @@ start:
     mov esp, stack_top 
     call kernel_main
     hlt
+
+; Paging
+section .bss ; block started by symbol automatically set to zero by linker
+
+align 4096
+
+paging:
+    resb 3 * 4096
 
 section .rodata
 gdt_start: ; don't remove the labels, they're needed to compute sizes and jumps
