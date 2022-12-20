@@ -1,3 +1,5 @@
+#include "console.h"
+
 // Reference: https://cdrdv2.intel.com/v1/dl/getContent/671200
 #define PAGE_DIRECTORY_LENGTH 1024
 #define PAGE_TABLE_LENGTH 1024
@@ -32,13 +34,14 @@ void init_page_directory(int page_table_index) {
     page_directory[page_table_index] = address | flags;
 }
 
-void paging_start() {
-  invalidate_all_pdes();
+void paging_start(unsigned int* paging, unsigned int* multiboot_info) {
+   printk("paging_start\n");
+  /*invalidate_all_pdes();
   invalidate_all_ptes();
   for (int i = 0; i < PAGE_DIRECTORY_LENGTH; i++) {
     init_page_directory(i);
     for (int j = 0; j < VALID_PAGE_TABLE_COUNT; j++) {
       // map_identity_page(i, j);
     }
-  }
+  }*/
 }

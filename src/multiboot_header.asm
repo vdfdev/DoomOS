@@ -9,6 +9,7 @@ header_start:
 
     ; required end tag
     dw 0    ; type
-    dw 0    ; flags
+    ; 0x1 for page align, 0x2 for memory info, 0x4 for video mode
+    dw (0x1 | 0x2 | 0x4)  ; flags
     dd 8    ; size
 header_end:

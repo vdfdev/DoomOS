@@ -1,12 +1,14 @@
 global start
 extern kernel_main
 extern paging_ptr
+extern multiboot_info_ptr
 
 section .text
 bits 32
 start:
     mov eax, paging
     mov [paging_ptr], eax
+    mov [multiboot_info_ptr], ebx
     ;;;;;; GDT ;;;;;;;
     lgdt [gdt_descriptor]
     mov ax, DATA_SEG
