@@ -2,7 +2,7 @@ kernel := build/DoomOS.bin
 CROSS_GCC := ./compiler/bin/i686-elf-gcc
 CROSS_AS := ./compiler/bin/i686-elf-as
 
-QEMU_FLAGS  = -kernel $(kernel) -vga std -serial stdio
+QEMU_FLAGS  = -kernel $(kernel) -serial stdio
 QEMU_GDB    = -gdb tcp::1234 -S -m 128 -no-reboot -no-shutdown -d int,cpu_reset
 #QEMU_NOX    = -nographic
 
@@ -31,7 +31,7 @@ build/DoomOS.iso: $(kernel) grub.cfg
 	@rm -r build/isofiles
 
 $(kernel): $(c_object_files) build/boot.o
-	$(CROSS_GCC) -T linker.ld -o $(kernel) -ffreestanding -O2 -nostdlib build/boot.o $(c_object_files) -lgcc
+	$(CROSS_GCC) -T linker.ld -o $(kernel) -ggdb -ffreestanding -O2 -nostdlib build/boot.o $(c_object_files) -lgcc
 
 build/boot.o: boot.S
 	@mkdir -p $(shell dirname $@)
@@ -39,5 +39,5 @@ build/boot.o: boot.S
 
 build/%.o: %.c
 	@mkdir -p $(shell dirname $@)
-	$(CROSS_GCC) -std=gnu99 -ffreestanding -O2 -Wall -Wextra -c $< -o $@
+	$(CROSS_GCC) -std=gnu99 -ffreestanding -O2 -Wall -ggdb -Wextra -c $< -o $@
 
