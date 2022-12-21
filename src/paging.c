@@ -34,7 +34,7 @@ void init_page_directory(int page_table_index) {
     page_directory[page_table_index] = address | flags;
 }
 
-void paging_start(unsigned int* paging, unsigned int* multiboot_info) {
+void paging_start(unsigned int* multiboot_info_ptr, unsigned int* page_tables_ptr) {
    printk("paging_start\n");
   /*invalidate_all_pdes();
   invalidate_all_ptes();

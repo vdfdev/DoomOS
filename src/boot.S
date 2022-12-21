@@ -44,9 +44,6 @@ page_tables_start:
 .extern kernel_main
 .type init, @function
 
-.extern multiboot_info_ptr
-.type multiboot_info_ptr, @object
-
 start:
     cli
     cld
@@ -55,9 +52,8 @@ start:
 
     and $-16, %esp
 
-    mov %ebx, multiboot_info_ptr
-
     pushl $page_tables_start
+    pushl %ebx
     call kernel_main
     add $4, %esp
 
