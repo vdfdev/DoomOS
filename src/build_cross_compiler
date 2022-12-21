@@ -4,7 +4,7 @@ set -e
 
 sudo apt install -y build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo
 
-export PREFIX="$(pwd)/build/compiler"
+export PREFIX="$(pwd)/compiler"
 echo $PREFIX
 mkdir -p $PREFIX
 export TARGET=i686-elf

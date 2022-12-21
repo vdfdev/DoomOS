@@ -1,65 +1,43 @@
-kernel := build/kernel.bin
-iso := build/DoomOS.iso
-linker_script := linker.ld
-grub_cfg := grub.cfg
+kernel := build/DoomOS.bin
+CROSS_GCC := ./compiler/bin/i686-elf-gcc
+CROSS_AS := ./compiler/bin/i686-elf-as
 
-CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O1 -Wall -MD -ggdb -m32 -fno-omit-frame-pointer -Werror -nostdlib
-
-QEMU_FLAGS  = -cdrom $(iso) -vga std -serial stdio
+QEMU_FLAGS  = -kernel $(kernel) -vga std -serial stdio
 QEMU_GDB    = -gdb tcp::1234 -S -m 128 -no-reboot -no-shutdown -d int,cpu_reset
-# QEMU_CURSES = -curses
-# QEMU_NOX    = -nographic
+#QEMU_NOX    = -nographic
 
-assembly_source_files := $(wildcard *.asm)
 c_source_files := $(wildcard *.c)
-assembly_object_files := $(patsubst %.asm, build/%.o, $(assembly_source_files))
 c_object_files := $(patsubst %.c, build/%.o, $(c_source_files))
 
-# regardless of the state of files, make will always run these targets
-.PHONY: all clean qemu qemu-gdb qemu-nox qemu-gdb-nox iso kernel
+all: qemu
 
-#default target (the first one in the Makefile)
-all: $(iso)
-
-# remove all "compile-time-generated" files.
 clean:
-	rm -rf build
+	rm -rf build/
 
+qemu: $(kernel)
+	qemu-system-i386 $(QEMU_FLAGS) $(QEMU_NOX)
 
-# CONVENIENT TARGETS TO RUN QEMU WITH DIFFERENT OPTIONS
-# basic run
-qemu: $(iso)
-	qemu-system-x86_64 $(QEMU_FLAGS) $(QEMU_CURSES) $(QEMU_NOX)
+qemu-gdb: $(kernel)
+	qemu-system-i386 $(QEMU_FLAGS) $(QEMU_NOX) $(QEMU_GDB)
 
-# run with debug options
-qemu-gdb: $(iso)
-	qemu-system-x86_64 $(QEMU_FLAGS) $(QEMU_CURSES) $(QEMU_NOX) $(QEMU_GDB)
-
-
-# TARGETS THAT ACTUALLY BUILD NEW FILES
-# target "iso" will print "Done" once the prerequisites are fulfilled
-iso: $(iso)
+iso: build/DoomOS.iso
 	@echo "Done"
 
-# create file defined in variable "iso"
-$(iso): $(kernel) $(grub_cfg)
+build/DoomOS.iso: $(kernel) grub.cfg
 	@mkdir -p build/isofiles/boot/grub
-	cp $(kernel) build/isofiles/boot/kernel.bin
-	cp $(grub_cfg) build/isofiles/boot/grub
-	grub-mkrescue -o $(iso) build/isofiles #2> /dev/null
+	cp $(kernel) build/isofiles/boot/DoomOS.bin
+	cp grub.cfg build/isofiles/boot/grub
+	grub-mkrescue -o build/DoomOS.iso build/isofiles
 	@rm -r build/isofiles
 
-# create file defined in variable "kernel"
-$(kernel): $(c_object_files) $(assembly_object_files) $(linker_script)
-	ld -m elf_i386  -T $(linker_script) -o $(kernel) $(assembly_object_files) $(c_object_files)
+$(kernel): $(c_object_files) build/boot.o
+	$(CROSS_GCC) -T linker.ld -o $(kernel) -ffreestanding -O2 -nostdlib build/boot.o $(c_object_files) -lgcc
 
-# compile any C file
+build/boot.o: boot.S
+	@mkdir -p $(shell dirname $@)
+	$(CROSS_AS) boot.S -o build/boot.o
+
 build/%.o: %.c
 	@mkdir -p $(shell dirname $@)
-	gcc $(CFLAGS) -c $< -o $@
-
-# compile any assembly file
-build/%.o: %.asm
-	@mkdir -p $(shell dirname $@)
-	nasm -felf32 -g -F dwarf $< -o $@
+	$(CROSS_GCC) -std=gnu99 -ffreestanding -O2 -Wall -Wextra -c $< -o $@
 
