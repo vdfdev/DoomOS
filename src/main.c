@@ -1,15 +1,15 @@
-#include "console.h"
+#include "uart.h"
+#include "asm.h"
+#include "kernel.h"
 #include "screen.h"
-#include "paging.h"
+#include "page.h"
+#include "gdt.h"
 
-static inline void halt(void){
-    asm volatile("hlt" : : );
-}
-
-void kernel_main(unsigned int* multiboot_info_ptr, unsigned int* page_tables_ptr){
-    uartinit(); 
-    paging_start(multiboot_info_ptr, page_tables_ptr);
-    screen_start();
-    printk("Hello World, DoomOS!\n");
-    halt();
+void kernel_main(void* multiboot_info_ptr, void* page_tables_ptr){
+    uart_init();
+    gdt_init(); 
+    page_init(multiboot_info_ptr, page_tables_ptr);
+    screen_init();
+    printk("Welcome to DoomOS!\n");
+    asm_halt();
 }

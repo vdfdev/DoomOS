@@ -1,4 +1,4 @@
-#include "console.h"
+#include "uart.h"
 
 // Reference: https://cdrdv2.intel.com/v1/dl/getContent/671200
 #define PAGE_DIRECTORY_LENGTH 1024
@@ -34,8 +34,7 @@ void init_page_directory(int page_table_index) {
     page_directory[page_table_index] = address | flags;
 }
 
-void paging_start(unsigned int* multiboot_info_ptr, unsigned int* page_tables_ptr) {
-   printk("paging_start\n");
+void page_init(void* multiboot_info_ptr, void* page_tables_ptr) {
   /*invalidate_all_pdes();
   invalidate_all_ptes();
   for (int i = 0; i < PAGE_DIRECTORY_LENGTH; i++) {
