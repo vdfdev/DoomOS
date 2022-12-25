@@ -8,7 +8,7 @@
 void kernel_main(void* multiboot_info_ptr, void* page_tables_ptr){
     uart_init();
     gdt_init(); 
-    page_init(multiboot_info_ptr, page_tables_ptr);
+    page_init(page_tables_ptr);
     screen_init();
     printk("Welcome to DoomOS!\n");
     asm_halt();
