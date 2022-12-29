@@ -114,7 +114,6 @@ void page_flush(void* page_tables_ptr) {
   cr3.pwt = false;
   cr3.pcd = false;
   cr3.page_directory_address = ((uint32_t)page_tables_ptr) / PAGE_SIZE; 
-  // TODO: fix this asm below
   asm volatile(
     "mov %0, %%eax\n"
     "mov %%eax, %%cr3\n"
