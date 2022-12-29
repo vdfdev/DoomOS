@@ -132,7 +132,7 @@ void page_init(void* page_tables_ptr) {
   }
   // Setup kernel (8MB identity mapping).
   struct page_pde* page_directory = (struct page_pde*)page_tables_ptr;
-  struct page_pte* page_tables_base = (struct page_pte*)((uint32_t*)page_tables_ptr + PAGE_DIRECTORY_LENGTH);
+  struct page_pte* page_tables_base = (struct page_pte*)(page_directory + PAGE_DIRECTORY_LENGTH);
   for (uint16_t i = 0; i < KERNEL_PAGE_TABLE_COUNT; i++) {
     struct page_pde* pde = page_directory + i;
     pde->present = true;
