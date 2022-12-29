@@ -6,6 +6,7 @@
 // Reference: https://cdrdv2.intel.com/v1/dl/getContent/671200
 #define PAGE_DIRECTORY_LENGTH 1024
 #define PAGE_TABLE_LENGTH 1024
+#define PAGE_SIZE 4096
 // 2 page tables maps 8 MB of memory:
 // 2 page tables * 1024 (page / page table) * 4 KB / page = 8 MB 
 #define KERNEL_PAGE_TABLE_COUNT 2
@@ -98,34 +99,53 @@ struct page_pte {
 // 8 MB -> 3 GB             Available to userspace.                                                                                                                                       
 // 3GB  -> 4 GB             Kernel-only virtual address space (>0xc0000000)                                                                                                               
 
-void page_identity_map(struct page_pte* pte) {
+void page_identity_map(struct page_pte* pte, uint16_t pde_index, uint16_t pte_index) {
   pte->present = true;
   pte->writable = true;
-  // TODO: set address to be identity mapped.
+  // Address is PAGE_SIZE * PAGE_TABLE_LENGTH * pde_index + PAGE_SIZE * pte_index
+  // but we lose the 12 least significant bits (because it is always 4kb aligned)
+  // which is equivalent of dividing by 4096, so we can simplify the address to
+  pte->page_address = PAGE_TABLE_LENGTH * pde_index + pte_index;
+}
+
+void page_flush(void* page_tables_ptr) {
+  // Enable paging
+  struct page_cr3 cr3;
+  cr3.pwt = false;
+  cr3.pcd = false;
+  cr3.page_directory_address = ((uint32_t)page_tables_ptr) / PAGE_SIZE; 
+  // TODO: fix this asm below
+  asm volatile(
+    "mov %0, %%eax\n"
+    "mov %%eax, %%cr3\n"
+    "mov %%cr0, %%eax\n"
+    "or $0x80000000, %%eax\n"
+    "mov %%eax, %%cr0"
+  :: "a"(cr3) : "memory");
 }
 
 // Page tables pointer need to be reserved by linker so we can be sure it is 4kb-aligned.
 void page_init(void* page_tables_ptr) {
   // Zero all PDEs and PTEs
-  for (int i = 0; i < PAGE_DIRECTORY_LENGTH + PAGE_TABLE_LENGTH * KERNEL_PAGE_TABLE_COUNT; i++) {
+  for (uint16_t i = 0; i < PAGE_DIRECTORY_LENGTH + PAGE_TABLE_LENGTH * KERNEL_PAGE_TABLE_COUNT; i++) {
     *((uint32_t*)page_tables_ptr + i) = 0;
   }
   // Setup kernel (8MB identity mapping).
   struct page_pde* page_directory = (struct page_pde*)page_tables_ptr;
-  struct page_pte* page_tables_base = (struct page_pte*)(page_tables_ptr + PAGE_DIRECTORY_LENGTH);
-  for (int i = 0; i < KERNEL_PAGE_TABLE_COUNT; i++) {
+  struct page_pte* page_tables_base = (struct page_pte*)((uint32_t*)page_tables_ptr + PAGE_DIRECTORY_LENGTH);
+  for (uint16_t i = 0; i < KERNEL_PAGE_TABLE_COUNT; i++) {
     struct page_pde* pde = page_directory + i;
     pde->present = true;
     pde->writable = true;
     struct page_pte* page_table = page_tables_base + i * PAGE_TABLE_LENGTH;
-    pde->page_table_address = ((uint32_t)page_table) << 12;
-    for (int j = 0; j < PAGE_TABLE_LENGTH; j++) {
+    pde->page_table_address = ((uint32_t)page_table) / PAGE_SIZE;
+    for (uint16_t j = 0; j < PAGE_TABLE_LENGTH; j++) {
       struct page_pte* pte = page_table + j;
-      page_identity_map(pte);
+      page_identity_map(pte, i, j);
     }
   }
   // Set first 4KB as invalid (null page).
   page_tables_base->present = false;
-  // Make first page null page, so nullptr derefences crash.
+  page_flush(page_tables_ptr);
   printk("[PAGE] OK\n");
 }

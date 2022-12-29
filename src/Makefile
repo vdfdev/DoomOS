@@ -35,9 +35,9 @@ $(kernel): $(c_object_files) build/boot.o
 
 build/boot.o: boot.S
 	@mkdir -p $(shell dirname $@)
-	$(CROSS_AS) boot.S -o build/boot.o
+	$(CROSS_AS) -O0 boot.S -o build/boot.o
 
 build/%.o: %.c
 	@mkdir -p $(shell dirname $@)
-	$(CROSS_GCC) -std=gnu99 -ffreestanding -O2 -Wall -ggdb -Wextra -c $< -o $@
+	$(CROSS_GCC) -O0 -std=gnu99 -ffreestanding -O2 -Wall -ggdb -Wextra -c $< -o $@
 

@@ -1,5 +1,6 @@
 #include "gdt.h"
 #include "uart.h"
+#include "kernel.h"
 #include <stdint.h>
 
 // Based on http://www.osdever.net/bkerndev/Docs/gdt.htm
