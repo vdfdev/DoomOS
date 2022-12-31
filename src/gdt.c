@@ -50,16 +50,16 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
 void gdt_flush()
 { 
     // Reference https://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html 
-    asm volatile(                                                                                                                                                                             
+    // 0x10 as segment selector means offset of 16 bytes from the start of GDT.
+    // Because each gdt entry is 8 bytes, that's selecting gdt[2] (data segment).
+    asm volatile(
+        "lgdt %0\n"
+        "mov $0x10, %%ax\n"                                                                                                                                                                             
         "mov %%ax, %%ds\n"                                                                                                                                                                    
         "mov %%ax, %%es\n"                                                                                                                                                                    
         "mov %%ax, %%fs\n"                                                                                                                                                                    
         "mov %%ax, %%gs\n"                                                                                                                                                                    
-        "mov %%ax, %%ss\n" ::"a"(0x10)                                                                                                                                                   
-        : "memory");
-    asm("lgdt %0" ::"m"(gp)                                                                                                                                                               
-        : "memory");
-
+        "mov %%ax, %%ss\n" :: "m"(gp) : "memory"); 
 }
 
 /* Should be called by main. This will setup the special GDT
