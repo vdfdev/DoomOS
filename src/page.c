@@ -146,5 +146,5 @@ void page_init(void* page_tables_ptr) {
   // Set first 4KB as invalid (null page).
   page_tables_base->present = false;
   page_flush(page_tables_ptr);
-  printk("[PAGE] OK\n");
+  kprint("[PAGE] OK\n");
 }

@@ -41,5 +41,5 @@ void screen_init() {
   write_cute_str(30, 1, "Hello World, DoomOS!");
   write_str(30, 2, "A Didatic OS.");
   write_str(0, 4, "Learning about Operating Systems and computers by running Doom.");
-  printk("[SCREEN] OK\n");
+  kprint("[SCREEN] OK\n");
 }

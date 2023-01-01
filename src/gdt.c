@@ -90,5 +90,5 @@ void gdt_init()
 
     /* Flush out the old GDT and install the new changes! */
     gdt_flush();
-    printk("[GDT] OK\n");
+    kprint("[GDT] OK\n");
 }

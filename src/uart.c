@@ -31,11 +31,11 @@ void uart_init()
   asm_inb(COM1+2);
   asm_inb(COM1+0);
 
-  printk("[UART] OK\n");
+  kprint("[UART] OK\n");
 }
 
 void
-uart_putc(int c)
+uart_putchar(char c)
 {
   int i;
 
@@ -47,17 +47,6 @@ uart_putc(int c)
   }
 
   asm_outb(COM1+0, c);
-}
-
-
-// Print to the console
-void uart_print(char *str)
-{
-    int i, c;
-
-    for(i = 0; (c = str[i]) != 0; i++){
-        uart_putc(c);
-    }
 }
 
 

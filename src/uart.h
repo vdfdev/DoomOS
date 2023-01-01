@@ -2,6 +2,6 @@
 #define __CONSOLE_H__
 
 void uart_init(); 
-void uart_print(char *);
+void uart_putchar(char);
 
 #endif
