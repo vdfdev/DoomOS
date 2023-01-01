@@ -17,7 +17,7 @@ void printf_impl_d_rec(int d) {
     return;
   }
   printf_impl_d_rec(d/10);
-  kputc((d % 10) + 48);
+  kputc((d % 10) + '0');
 }
 
 void printf_impl_d(int d) {
@@ -36,7 +36,7 @@ void printf_impl_u_rec(uint32_t u) {
     return;
   }
   printf_impl_u_rec(u/10);
-  kputc((u % 10) + 48);
+  kputc((u % 10) + '0');
 }
 
 void printf_impl_u(uint32_t u) {
@@ -44,6 +44,27 @@ void printf_impl_u(uint32_t u) {
     kputc('0');
   }
   printf_impl_u_rec(u);
+}
+
+void printf_impl_x_rec(uint32_t x) {
+  if (x==0) {
+    return;
+  }
+  printf_impl_x_rec(x/16);
+  uint8_t digit = x % 16; 
+  uint8_t offset = '0';
+  if (x >= 10) {
+    offset = 'A';
+    digit -= 10;
+  }
+  kputc(digit + offset);
+}
+
+void printf_impl_x(uint32_t x) {
+  if (x==0) {
+    kputc('0');
+  }
+  printf_impl_x_rec(x);
 }
 
 void printf_impl(char* format, va_list args) {
@@ -69,16 +90,17 @@ void printf_impl(char* format, va_list args) {
           int d = va_arg(args, int);
           printf_impl_d(d);
           continue;
-        case '%': // Escaped %
-          kputc('>');
-          kputc(c);
-          kputc('<');
+        case 's': // String
+          char* s = va_arg(args, char*);
+          kprint(s);
           continue;
-        default: // Not found
-          kputc('?');
-          kputc('%');
+        case 'x': // Hex
+          uint32_t x = va_arg(args, uint32_t);
+          printf_impl_x(x);
+          continue;
+        default:
+        case '%': // Escaped %
           kputc(c);
-          kputc('?');
           continue;
     }
   }
