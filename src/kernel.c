@@ -53,7 +53,7 @@ void printf_impl_x_rec(uint32_t x) {
   printf_impl_x_rec(x/16);
   uint8_t digit = x % 16; 
   uint8_t offset = '0';
-  if (x >= 10) {
+  if (digit >= 10) {
     offset = 'A';
     digit -= 10;
   }
@@ -89,6 +89,10 @@ void printf_impl(char* format, va_list args) {
         case 'd': // Integer
           int d = va_arg(args, int);
           printf_impl_d(d);
+          continue;
+        case 'c': // Character
+          char ch = va_arg(args, int);
+          kputc(ch);
           continue;
         case 's': // String
           char* s = va_arg(args, char*);

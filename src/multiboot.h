@@ -72,11 +72,10 @@ struct multiboot_mem_t {
 } __attribute__((packed));
 
 struct multiboot_boot_device_t {
-  char value[4];   
-} __attribute__((packed));
-
-struct multiboot_cmdline_t {
-  char value[4];   
+  uint8_t part3;
+  uint8_t part2;
+  uint8_t part1;
+  uint8_t drive;
 } __attribute__((packed));
 
 struct multiboot_mods_entry_t {
@@ -97,10 +96,49 @@ struct multiboot_syms_a_out_t {
 } __attribute__((packed));
 
 struct multiboot_syms_elf_t {
-  uint32_t tabsize;
-  uint32_t strsize;
+  uint32_t num;
+  uint32_t size;
   uint32_t addr;
   uint32_t shndx;
+} __attribute__((packed));
+
+struct multiboot_mmap_t {
+  uint32_t length;
+  void* addr;
+} __attribute__((packed));
+
+struct multiboot_drives_t {
+  uint32_t length;
+  void* addr;
+} __attribute__((packed));
+
+struct multiboot_config_tables_t {
+  void* addr;
+} __attribute__((packed));
+
+struct multiboot_apm_table_t {
+  void* addr;
+} __attribute__((packed));
+
+struct multiboot_vbe_t {
+  void* control_info;
+  void* mode_info;
+  uint16_t mode;
+  uint16_t interface_seg;
+  uint16_t interface_off;
+  uint16_t interface_len;
+} __attribute__((packed));
+
+struct multiboot_framebuffer_t {
+  void* addr;
+  void* addr_64bit;
+  uint32_t pitch;
+  uint32_t width;
+  uint32_t height;
+  uint32_t bpp;
+  bool type : 1;
+  // Missing last fields because it depends on the types.
+  // Add later if we need it.
 } __attribute__((packed));
 
 void multiboot_init(void *);

@@ -13,7 +13,5 @@ void kernel_main(void* multiboot_info_ptr, void* page_tables_ptr){
     multiboot_init(multiboot_info_ptr);
     screen_init();
     kprint("Welcome to DoomOS!\n");
-    kprintf("%d: 0 128: %d foo: %s\n", 0, 128, "foo");
-    kprintf("%x: DEADBEEF\n", 0xDEADBEEF);
     asm_halt();
 }
