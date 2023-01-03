@@ -31,11 +31,6 @@ stack_bottom:
 .skip 32768
 stack_top:
 
-.section .page_tables
-.align 4096
-page_tables_start:
-.skip 4096*3
-
 .section .text
 
 .global start
@@ -52,7 +47,6 @@ start:
 
     and $-16, %esp
 
-    pushl $page_tables_start
     pushl %ebx
     call kernel_main
     add $4, %esp

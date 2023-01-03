@@ -12,7 +12,7 @@
 #define KERNEL_PAGE_TABLE_COUNT 2
 
 // CR3 is used to determine the 4k-address aligned (20 bits) base of the page directory.
-struct page_cr3 {
+struct page_cr3_t {
   // Ignored.
   uint32_t : 3;
   // Page-level write-through; indirectly determines the memory type used to access the page 
@@ -30,7 +30,7 @@ struct page_cr3 {
 
 // Page Directory Entry. Points to Page Table based on the last (most significant) 10 bits of the address.
 // Each Page Table has 1024 4KB pages, therefore each PDE takes care of 4MB of memory. 
-struct page_pde {
+struct page_pde_t {
   // Present; must be 1 to map a 4-MByte page. If false, all the other bits are ignored.
   bool present : 1;
   // Read/write; if 0, writes may not be allowed to the 4-MByte page referenced by this entry.
@@ -55,10 +55,14 @@ struct page_pde {
   // Physical address of 4-KByte aligned page table referenced by this entry.
   // We only need 20 bits for the address because we know that the last 12 bits is zero (4K aligned).
   uint32_t page_table_address : 20;
-}__attribute__((packed));
+} __attribute__((packed));
+
+struct page_directory_t {
+  struct page_pde_t entries[PAGE_DIRECTORY_LENGTH];
+} __attribute__((packed));
 
 // Page Table Entry. Specifies a page (4KB) attributes.
-struct page_pte {
+struct page_pte_t {
   // Present; must be 1 to map a 4KB page. If false, all the other bits are ignored.
   bool present : 1;
   // Read/write; if 0, writes may not be allowed to the 4KB page referenced by this entry.
@@ -86,7 +90,11 @@ struct page_pte {
   // Physical address of 4-KByte aligned page referenced by this entry.
   // We only need 20 bits for the address because we know that the last 12 bits is zero (4K aligned).
   uint32_t page_address : 20;
-}__attribute__((packed));
+} __attribute__((packed));
+
+struct page_table_t {
+  struct page_pte_t entries[PAGE_TABLE_LENGTH];
+} __attribute__((packed));
 
 // Basic physical memory map:                                                                                                                                                             
 // [0   , 1 MB)           We're just leaving this alone for now (VGA, etc).                                                                                                                        
@@ -99,7 +107,7 @@ struct page_pte {
 // 8 MB -> 3 GB             Available to userspace.                                                                                                                                       
 // 3GB  -> 4 GB             Kernel-only virtual address space (>0xc0000000)                                                                                                               
 
-void page_identity_map(struct page_pte* pte, uint16_t pde_index, uint16_t pte_index) {
+void page_identity_map(struct page_pte_t* pte, uint16_t pde_index, uint16_t pte_index) {
   pte->present = true;
   pte->writable = true;
   // Address is PAGE_SIZE * PAGE_TABLE_LENGTH * pde_index + PAGE_SIZE * pte_index
@@ -108,12 +116,17 @@ void page_identity_map(struct page_pte* pte, uint16_t pde_index, uint16_t pte_in
   pte->page_address = PAGE_TABLE_LENGTH * pde_index + pte_index;
 }
 
-void page_flush(void* page_tables_ptr) {
+__attribute__((aligned(4096)))
+struct page_directory_t page_directory;
+__attribute__((aligned(4096)))
+struct page_table_t kernel_page_tables[KERNEL_PAGE_TABLE_COUNT];
+
+void page_flush() {
   // Enable paging
-  struct page_cr3 cr3;
+  struct page_cr3_t cr3;
   cr3.pwt = false;
   cr3.pcd = false;
-  cr3.page_directory_address = ((uint32_t)page_tables_ptr) / PAGE_SIZE; 
+  cr3.page_directory_address = ((uint32_t)&page_directory) / PAGE_SIZE; 
   asm volatile(
     "mov %0, %%eax\n"
     "mov %%eax, %%cr3\n"
@@ -123,28 +136,49 @@ void page_flush(void* page_tables_ptr) {
   :: "a"(cr3) : "memory");
 }
 
-// Page tables pointer need to be reserved by linker so we can be sure it is 4kb-aligned.
-void page_init(void* page_tables_ptr) {
-  // Zero all PDEs and PTEs
-  for (uint16_t i = 0; i < PAGE_DIRECTORY_LENGTH + PAGE_TABLE_LENGTH * KERNEL_PAGE_TABLE_COUNT; i++) {
-    *((uint32_t*)page_tables_ptr + i) = 0;
+
+void page_init_directory() {
+  for (uint16_t i = 0; i < PAGE_DIRECTORY_LENGTH; i++) {
+    struct page_pde_t* pde = &(page_directory.entries[i]);
+    *((uint32_t*)pde) = 0;
   }
-  // Setup kernel (8MB identity mapping).
-  struct page_pde* page_directory = (struct page_pde*)page_tables_ptr;
-  struct page_pte* page_tables_base = (struct page_pte*)(page_directory + PAGE_DIRECTORY_LENGTH);
+}
+
+void page_init_single_page_table(struct page_table_t* pt) {
+  for (uint16_t i = 0; i < PAGE_TABLE_LENGTH; i++) {
+    struct page_table_entry_t* pte = &(pt->entries[i]);
+    *((uint32_t*)pte) = 0;
+  }
+}
+
+void page_init_kernel_page_tables() {
   for (uint16_t i = 0; i < KERNEL_PAGE_TABLE_COUNT; i++) {
-    struct page_pde* pde = page_directory + i;
+    struct page_table_t* page_table = &(kernel_page_tables[i]);
+    page_init_single_page_table(page_table);
+  }
+}
+
+void page_identity_map_whole_page_table(struct page_table_t* page_table, uint16_t pde_index) {
+  for (uint16_t i = 0; i < PAGE_TABLE_LENGTH; i++) {
+    struct page_pte_t* pte = &(page_table->entries[i]);
+    page_identity_map(pte, pde_index, i);
+  }
+}
+
+// Page tables pointer need to be reserved by linker so we can be sure it is 4kb-aligned.
+void page_init() {
+  page_init_directory();
+  page_init_kernel_page_tables();
+  for (uint16_t i = 0; i < KERNEL_PAGE_TABLE_COUNT; i++) {
+    struct page_pde_t* pde = &(page_directory.entries[i]);
     pde->present = true;
     pde->writable = true;
-    struct page_pte* page_table = page_tables_base + i * PAGE_TABLE_LENGTH;
+    struct page_table_t* page_table = &(kernel_page_tables[i]);
     pde->page_table_address = ((uint32_t)page_table) / PAGE_SIZE;
-    for (uint16_t j = 0; j < PAGE_TABLE_LENGTH; j++) {
-      struct page_pte* pte = page_table + j;
-      page_identity_map(pte, i, j);
-    }
+    page_identity_map_whole_page_table(page_table, i);
   }
   // Set first 4KB as invalid (null page).
-  page_tables_base->present = false;
-  page_flush(page_tables_ptr);
+  kernel_page_tables[0].entries[0].present = false;
+  page_flush();
   kprint("[PAGE] OK\n");
 }
