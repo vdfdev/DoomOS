@@ -146,7 +146,7 @@ void page_init_directory() {
 
 void page_init_single_page_table(struct page_table_t* pt) {
   for (uint16_t i = 0; i < PAGE_TABLE_LENGTH; i++) {
-    struct page_table_entry_t* pte = &(pt->entries[i]);
+    struct page_pte_t* pte = &(pt->entries[i]);
     *((uint32_t*)pte) = 0;
   }
 }

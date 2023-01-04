@@ -31,7 +31,7 @@ build/DoomOS.iso: $(kernel) grub.cfg
 	@rm -r build/isofiles
 
 $(kernel): $(c_object_files) build/boot.o
-	$(CROSS_GCC) -T linker.ld -o $(kernel) -ggdb -ffreestanding -O2 -nostdlib build/boot.o $(c_object_files) -lgcc
+	$(CROSS_GCC) -T linker.ld -o $(kernel) -ggdb -ffreestanding -O0 -nostdlib build/boot.o $(c_object_files) -lgcc
 
 build/boot.o: boot.S
 	@mkdir -p $(shell dirname $@)
@@ -39,5 +39,5 @@ build/boot.o: boot.S
 
 build/%.o: %.c
 	@mkdir -p $(shell dirname $@)
-	$(CROSS_GCC) -O0 -std=gnu99 -ffreestanding -O2 -Wall -ggdb -Wextra -c $< -o $@
+	$(CROSS_GCC) -O0 -std=gnu99 -ffreestanding -Wall -ggdb -Wextra -c $< -o $@
 
