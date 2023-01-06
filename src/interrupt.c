@@ -88,8 +88,8 @@ void generic_irq_handle() {
   void interrupt_irq##irq(); \
   asm(".globl interrupt_irq" #irq "\n" \
       "interrupt_irq" #irq ":\n" \
-      "mov $" #irq ", %eax\n" \
-      "mov %eax, irq_handled\n" \
+      "movl $" #irq ", %eax\n" \
+      "movl %eax, irq_handled\n" \
       "call generic_irq_handle\n" \
       "iret\n");
 
