@@ -15,7 +15,5 @@ void kernel_main(void* multiboot_info_ptr){
     interrupt_init();
     screen_init();
     kprint("Welcome to DoomOS!\n");
-    kprint("Causing page fault on purpose to test interrupt.\n");
-    kprintf("Foo: %x\n", *((uint32_t*)0xEFFFFFFF));
-    asm_halt();
+    for (;;) {}
 }
