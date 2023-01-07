@@ -74,11 +74,9 @@ void interrupt_idt_set_descriptor(uint8_t vector, void* isr) {
     descriptor->isr_high       = (uint32_t)isr >> 16;
 }
 
-uint32_t irq_handled = 100;
-
-void generic_irq_handle() {
-  kprintf("HANDLE IRQ %u\n", irq_handled);
-  if(irq_handled >= 8)
+void generic_irq_handle(uint32_t irq) {
+  kprintf("HANDLE IRQ %u\n", irq);
+  if(irq >= 8)
     outb(PIC2_COMMAND, PIC_EOI);
 
   outb(PIC1_COMMAND, PIC_EOI);
@@ -88,9 +86,9 @@ void generic_irq_handle() {
   void interrupt_irq##irq(); \
   asm(".globl interrupt_irq" #irq "\n" \
       "interrupt_irq" #irq ":\n" \
-      "movl $" #irq ", %eax\n" \
-      "movl %eax, irq_handled\n" \
+      "push $" #irq "\n" \
       "call generic_irq_handle\n" \
+      "add  $4, %esp\n" \
       "iret\n");
 
 #define FATAL_EXCEPTION_HANDLER(i, msg) \
