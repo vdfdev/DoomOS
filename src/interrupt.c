@@ -74,7 +74,7 @@ void interrupt_idt_set_descriptor(uint8_t vector, void* isr) {
     descriptor->isr_high       = (uint32_t)isr >> 16;
 }
 
-void generic_irq_handle(uint32_t irq) {
+void interrupt_irq_handle(uint32_t irq) {
   kprintf("HANDLE IRQ %u\n", irq);
   if(irq >= 8)
     outb(PIC2_COMMAND, PIC_EOI);
@@ -87,7 +87,7 @@ void generic_irq_handle(uint32_t irq) {
   asm(".globl interrupt_irq" #irq "\n" \
       "interrupt_irq" #irq ":\n" \
       "push $" #irq "\n" \
-      "call generic_irq_handle\n" \
+      "call interrupt_irq_handle\n" \
       "add  $4, %esp\n" \
       "iret\n");
 
@@ -126,7 +126,7 @@ IRQ_HANDLER(3)
 IRQ_HANDLER(4)
 IRQ_HANDLER(5)
 IRQ_HANDLER(6)
-IRQ_HANDLER(7)/*
+IRQ_HANDLER(7)
 IRQ_HANDLER(8)
 IRQ_HANDLER(9)
 IRQ_HANDLER(10)
@@ -134,7 +134,7 @@ IRQ_HANDLER(11)
 IRQ_HANDLER(12)
 IRQ_HANDLER(13)
 IRQ_HANDLER(14)
-IRQ_HANDLER(15)*/
+IRQ_HANDLER(15)
 
 void interrupt_pic_remap()
 {
@@ -207,7 +207,7 @@ void interrupt_init() {
   interrupt_idt_set_descriptor(IRQ_OFFSET + 4, interrupt_irq4); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 5, interrupt_irq5); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 6, interrupt_irq6); 
-  interrupt_idt_set_descriptor(IRQ_OFFSET + 7, interrupt_irq7);/*
+  interrupt_idt_set_descriptor(IRQ_OFFSET + 7, interrupt_irq7);
   interrupt_idt_set_descriptor(IRQ_OFFSET + 8, interrupt_irq8); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 9, interrupt_irq9); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 10, interrupt_irq10); 
@@ -215,7 +215,7 @@ void interrupt_init() {
   interrupt_idt_set_descriptor(IRQ_OFFSET + 12, interrupt_irq12); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 13, interrupt_irq13); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 14, interrupt_irq14); 
-  interrupt_idt_set_descriptor(IRQ_OFFSET + 15, interrupt_irq15);*/
+  interrupt_idt_set_descriptor(IRQ_OFFSET + 15, interrupt_irq15);
   __asm__ volatile ("lidt %0" : : "m"(interrupt_idtr)); // load the new IDT
   interrupt_pic_remap();
   __asm__ volatile ("sti"); // set the interrupt flag  
