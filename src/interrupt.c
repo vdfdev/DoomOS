@@ -75,7 +75,13 @@ void interrupt_idt_set_descriptor(uint8_t vector, void* isr) {
 }
 
 void interrupt_irq_handle(uint32_t irq) {
-  kprintf("HANDLE IRQ %u\n", irq);
+  switch (irq) {
+    case 0: // Timer. Do nothing
+      break;
+    default:
+      kprintf("UNHANDLED IRQ %u\n", irq);
+      break;
+  }
   if(irq >= 8)
     outb(PIC2_COMMAND, PIC_EOI);
 
