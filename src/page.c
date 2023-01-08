@@ -180,5 +180,5 @@ void page_init() {
   // Set first 4KB as invalid (null page).
   kernel_page_tables[0].entries[0].present = false;
   page_flush();
-  kprint("[PAGE] OK\n");
+  kprint("[PAGE] OK\r\n");
 }

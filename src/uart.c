@@ -31,7 +31,7 @@ void uart_init()
   asm_inb(COM1+2);
   asm_inb(COM1+0);
 
-  kprint("[UART] OK\n");
+  kprint("[UART] OK\r\n");
 }
 
 void

@@ -14,6 +14,8 @@ void kernel_main(void* multiboot_info_ptr){
     multiboot_init(multiboot_info_ptr);
     interrupt_init();
     screen_init();
-    kprint("Welcome to DoomOS!\n");
-    for (;;) {}
+    kprint("Welcome to DoomOS!\r\n");
+    for (;;) {
+        asm_halt();
+    }
 }

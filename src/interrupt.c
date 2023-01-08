@@ -79,7 +79,7 @@ void interrupt_irq_handle(uint32_t irq) {
     case 0: // Timer. Do nothing
       break;
     default:
-      kprintf("UNHANDLED IRQ %u\n", irq);
+      kprintf("UNHANDLED IRQ %u\r\n", irq);
       break;
   }
   if(irq >= 8)
@@ -99,7 +99,7 @@ void interrupt_irq_handle(uint32_t irq) {
 
 #define FATAL_EXCEPTION_HANDLER(i, msg) \
   static void interrupt_exception##i() {\
-    kprintf("FATAL EXCEPTION %u: %s\n", i, msg);\
+    kprintf("FATAL EXCEPTION %u: %s\r\n", i, msg);\
     asm volatile("cli; hlt" ::: "memory");\
   }
 
@@ -225,5 +225,5 @@ void interrupt_init() {
   __asm__ volatile ("lidt %0" : : "m"(interrupt_idtr)); // load the new IDT
   interrupt_pic_remap();
   __asm__ volatile ("sti"); // set the interrupt flag  
-  kprint("[INTERRUPTS] OK\n");
+  kprint("[INTERRUPTS] OK\r\n");
 }
