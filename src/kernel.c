@@ -1,6 +1,15 @@
 #include "uart.h"
+#include "pit.h"
 #include <stdint.h>
 #include <stdarg.h>
+
+void msleep(uint32_t t) {
+  pit_wait(t);
+}
+
+uint32_t ticks() {
+  return pit_get_ticks();
+}
 
 void kputc(char c) {
   uart_putchar(c);

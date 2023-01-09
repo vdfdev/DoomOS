@@ -1,8 +1,22 @@
 #include "uart.h"
 #include "kernel.h"
-#include "asm.h"
+#include <stdint.h>
 
 #define COM1    0x3f8
+
+static inline __attribute__((always_inline)) void outb(uint16_t port, uint8_t val)
+{
+    asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
+}
+
+static inline __attribute__((always_inline)) uint8_t inb(uint16_t port)
+{
+    uint8_t ret;
+    asm volatile ( "inb %1, %0"
+                   : "=a"(ret)
+                   : "Nd"(port) );
+    return ret;
+}
 
 static int uart;    // is there a uart?
 
@@ -10,26 +24,26 @@ void uart_init()
 {
 
   // Turn off the FIFO
-  asm_outb(COM1+2, 0);
+  outb(COM1+2, 0);
 
   // 9600 baud, 8 data bits, 1 stop bit, parity off.
-  asm_outb(COM1+3, 0x80);    // Unlock divisor
-  asm_outb(COM1+0, 115200/115200);
-  asm_outb(COM1+1, 0);
-  asm_outb(COM1+3, 0x03);    // Lock divisor, 8 data bits.
-  asm_outb(COM1+4, 0);
-  asm_outb(COM1+1, 0x01);    // Enable receive interrupts.
+  outb(COM1+3, 0x80);    // Unlock divisor
+  outb(COM1+0, 115200/115200);
+  outb(COM1+1, 0);
+  outb(COM1+3, 0x03);    // Lock divisor, 8 data bits.
+  outb(COM1+4, 0);
+  outb(COM1+1, 0x01);    // Enable receive interrupts.
 
   // If status is 0xFF, no serial port.
-  if(asm_inb(COM1+5) == 0xFF)
+  if(inb(COM1+5) == 0xFF)
       return;
 
   uart = 1;
 
   // Acknowledge pre-existing interrupt conditions;
   // enable interrupts.
-  asm_inb(COM1+2);
-  asm_inb(COM1+0);
+  inb(COM1+2);
+  inb(COM1+0);
 
   kprint("[UART] OK\r\n");
 }
@@ -42,11 +56,11 @@ uart_putchar(char c)
   if(!uart)
       return;
   
-  for(i = 0; i < 128 && !(asm_inb(COM1+5) & 0x20); i++) {
+  for(i = 0; i < 128 && !(inb(COM1+5) & 0x20); i++) {
     continue; // Add microdelay?
   }
 
-  asm_outb(COM1+0, c);
+  outb(COM1+0, c);
 }
 
 

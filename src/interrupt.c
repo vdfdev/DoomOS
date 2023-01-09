@@ -1,5 +1,6 @@
 #include "kernel.h"
-#include "asm.h"
+#include "pit.h"
+#include <stdint.h>
 #include <stdbool.h>
 
 #define IDT_MAX_DESCRIPTORS 256
@@ -15,17 +16,17 @@
 #define PIC_ICW4_8086	0x01		/* 8086/88 (MCS-80/85) mode */
 #define IRQ_OFFSET      32
 
-static inline void outb(uint16_t port, uint8_t val)
+static inline __attribute__((always_inline)) void outb(uint16_t port, uint8_t val)
 {
     asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
 }
 
-static inline void io_wait(void)
+static inline __attribute__((always_inline)) void io_wait(void)
 {
     outb(0x80, 0);
 }
 
-static inline uint8_t inb(uint16_t port)
+static inline __attribute__((always_inline)) uint8_t inb(uint16_t port)
 {
     uint8_t ret;
     asm volatile ( "inb %1, %0"
@@ -76,7 +77,8 @@ void interrupt_idt_set_descriptor(uint8_t vector, void* isr) {
 
 void interrupt_irq_handle(uint32_t irq) {
   switch (irq) {
-    case 0: // Timer. Do nothing
+    case 0:
+      pit_tick();
       break;
     default:
       kprintf("UNHANDLED IRQ %u\r\n", irq);
@@ -99,7 +101,7 @@ void interrupt_irq_handle(uint32_t irq) {
 
 #define FATAL_EXCEPTION_HANDLER(i, msg) \
   static void interrupt_exception##i() {\
-    kprintf("FATAL EXCEPTION %u: %s\r\n", i, msg);\
+    kprintf("[%d] FATAL EXCEPTION %u: %s\r\n", ticks(), i, msg);\
     asm volatile("cli; hlt" ::: "memory");\
   }
 

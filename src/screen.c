@@ -23,6 +23,7 @@ void write_cute_str(uint8_t x, uint8_t y, char* s) {
   for (uint32_t i = 0; *(s+i) != 0; i++) {
     char c = *(s+i);
     write_char(x + i, y, c, 2 + (j%4));
+    msleep(250);
     j++;
     if (c == ' ') {
       j = 0;
@@ -33,6 +34,7 @@ void write_cute_str(uint8_t x, uint8_t y, char* s) {
 void write_str(uint8_t x, uint8_t y, char* s) {
   for (uint32_t i = 0; *(s+i) != 0; i++) {
     write_char(x + i, y, *(s+i), 7);
+    msleep(100);
   }
 }
 
