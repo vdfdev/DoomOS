@@ -101,7 +101,7 @@ void interrupt_irq_handle(uint32_t irq) {
 
 #define FATAL_EXCEPTION_HANDLER(i, msg) \
   static void interrupt_exception##i() {\
-    kprintf("[%d] FATAL EXCEPTION %u: %s\r\n", ticks(), i, msg);\
+    kprintf("FATAL EXCEPTION %u: %s\r\n", i, msg);\
     asm volatile("cli; hlt" ::: "memory");\
   }
 

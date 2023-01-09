@@ -52,8 +52,13 @@ void gdt_flush()
     // Reference https://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html 
     // 0x10 as segment selector means offset of 16 bytes from the start of GDT.
     // Because each gdt entry is 8 bytes, that's selecting gdt[2] (data segment).
+    // Long jump fix explained here:
+    // - https://wiki.osdev.org/I_Cant_Get_Interrupts_Working#I.27m_receiving_a_General_Protection_Fault_interrupt_immediately_after_returning_from_my_first_interrupt
+    // - https://stackoverflow.com/questions/49438550/assembly-executing-a-long-jump-with-an-offset-with-different-syntax
     asm volatile(
         "lgdt %0\n"
+        "jmp $0x08,$longjmp_after_gdt\n"
+        "longjmp_after_gdt:\n"
         "mov $0x10, %%ax\n"                                                                                                                                                                             
         "mov %%ax, %%ds\n"                                                                                                                                                                    
         "mov %%ax, %%es\n"                                                                                                                                                                    
