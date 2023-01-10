@@ -62,5 +62,3 @@ uart_putchar(char c)
 
   outb(COM1+0, c);
 }
-
-

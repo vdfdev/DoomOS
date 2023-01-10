@@ -1,10 +1,27 @@
 #include "uart.h"
 #include "pit.h"
+#include "terminal.h"
 #include <stdint.h>
 #include <stdarg.h>
 
 void msleep(uint32_t t) {
   pit_wait(t);
+}
+
+uint32_t min(uint32_t a, uint32_t b) {
+  if (a <= b) {
+    return a;
+  } else {
+    return b;
+  }
+}
+
+uint32_t max(uint32_t a, uint32_t b) {
+  if (a > b) {
+    return a;
+  } else {
+    return b;
+  }
 }
 
 uint32_t ticks() {
@@ -13,6 +30,7 @@ uint32_t ticks() {
 
 void kputc(char c) {
   uart_putchar(c);
+  terminal_putchar(c);
 }
 
 void kprint(char * s) {

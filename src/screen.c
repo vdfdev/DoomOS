@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "kernel.h"
-#include "uart.h"
+#include "terminal.h"
 
 const uint8_t SCREEN_COLS = 80;
 const uint8_t SCREEN_ROWS = 25;
@@ -23,7 +23,6 @@ void write_cute_str(uint8_t x, uint8_t y, char* s) {
   for (uint32_t i = 0; *(s+i) != 0; i++) {
     char c = *(s+i);
     write_char(x + i, y, c, 2 + (j%4));
-    msleep(250);
     j++;
     if (c == ' ') {
       j = 0;
@@ -34,14 +33,14 @@ void write_cute_str(uint8_t x, uint8_t y, char* s) {
 void write_str(uint8_t x, uint8_t y, char* s) {
   for (uint32_t i = 0; *(s+i) != 0; i++) {
     write_char(x + i, y, *(s+i), 7);
-    msleep(100);
   }
 }
 
-void screen_init() {
+void screen_refresh() {
   clear_screen();
-  write_cute_str(30, 1, "Hello World, DoomOS!");
-  write_str(30, 2, "A Didatic OS.");
-  write_str(0, 4, "Learning about Operating Systems and computers by running Doom.");
-  kprint("[SCREEN] OK\r\n");
+  for (uint16_t i = 0; i < max(terminal_line_count, SCREEN_ROWS); i++) {
+    char *line = terminal_get_line(i);
+    write_str(0, SCREEN_ROWS - 1 - i, line);
+  }
+  write_cute_str(SCREEN_COLS-6, 0, "DoomOS");
 }
