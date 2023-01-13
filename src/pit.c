@@ -21,7 +21,7 @@ static inline __attribute__((always_inline)) uint8_t inb(uint16_t port)
     return ret;
 }
 
-volatile uint32_t pit_ticks;
+volatile uint32_t pit_ticks = 0;
 
 // I/O Ports
 #define PIT_COUNTER0                    0x40
@@ -74,6 +74,9 @@ uint32_t pit_get_ticks()
 
 void pit_wait(uint32_t ms)
 {
+  if (pit_ticks == 0) {
+    return;
+  }
   uint32_t start = pit_ticks;
  
   while (pit_ticks - start < ms)

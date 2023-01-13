@@ -57,7 +57,8 @@ uart_putchar(char c)
       return;
   
   for(i = 0; i < 128 && !(inb(COM1+5) & 0x20); i++) {
-    continue; // Add microdelay?
+    msleep(1);
+    continue;
   }
 
   outb(COM1+0, c);
