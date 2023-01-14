@@ -1,5 +1,6 @@
 // Based on https://github.com/pdoane/osdev/blob/master/time/pit.c
 #include "pit.h"
+#include "interrupt.h"
 #include <stdint.h>
 
 static inline __attribute__((always_inline)) void outb(uint16_t port, uint8_t val)
@@ -74,7 +75,7 @@ uint32_t pit_get_ticks()
 
 void pit_wait(uint32_t ms)
 {
-  if (pit_ticks == 0) {
+  if (!interrupt_is_enabled()) {
     return;
   }
   uint32_t start = pit_ticks;

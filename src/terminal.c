@@ -4,11 +4,11 @@
 #include "terminal.h"
 #include "kernel.h"
 
-uint32_t terminal_line_count = 0;
-uint32_t terminal_next_line = 0;
-uint32_t terminal_next_col = 0;
-char terminal_empty_string = 0;
-char terminal_buffer[TERMINAL_MAX_LINES][TERMINAL_MAX_LEN];
+volatile uint32_t terminal_line_count = 0;
+volatile uint32_t terminal_next_line = 0;
+volatile uint32_t terminal_next_col = 0;
+volatile char terminal_empty_string = 0;
+volatile char terminal_buffer[TERMINAL_MAX_LINES][TERMINAL_MAX_LEN];
 
 void terminal_new_line() {
   terminal_next_col = 0;
@@ -33,9 +33,9 @@ void terminal_putchar(char c) {
 
 char* terminal_get_line(uint32_t i) {
   if (i >= terminal_line_count) {
-    return &terminal_empty_string;
+    return (char*)&terminal_empty_string;
   }
   uint16_t line_number = (terminal_next_line - 1 - i) % TERMINAL_MAX_LINES;
-  char *s = terminal_buffer[line_number];
+  char *s = (char*)terminal_buffer[line_number];
   return s;
 }

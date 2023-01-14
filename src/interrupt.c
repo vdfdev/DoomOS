@@ -94,9 +94,11 @@ void interrupt_irq_handle(uint32_t irq) {
   void interrupt_irq##irq(); \
   asm(".globl interrupt_irq" #irq "\n" \
       "interrupt_irq" #irq ":\n" \
+      "cli\n" \
       "push $" #irq "\n" \
       "call interrupt_irq_handle\n" \
       "add  $4, %esp\n" \
+      "sti\n" \
       "iret\n");
 
 #define FATAL_EXCEPTION_HANDLER(i, msg) \
@@ -143,6 +145,15 @@ IRQ_HANDLER(12)
 IRQ_HANDLER(13)
 IRQ_HANDLER(14)
 IRQ_HANDLER(15)
+
+bool interrupt_is_enabled() {
+  uint32_t flags;
+  asm volatile("pushf ; pop %0"
+          : "=rm" (flags)
+          : /* no input */
+          : "memory");
+  return (flags & 0x0200) > 0;
+}
 
 void interrupt_pic_remap()
 {

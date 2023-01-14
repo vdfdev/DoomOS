@@ -39,7 +39,7 @@ void write_str(uint8_t x, uint8_t y, char* s) {
 void screen_refresh() {
   clear_screen();
   for (uint16_t i = 0; i < max(terminal_line_count, SCREEN_ROWS); i++) {
-    char *line = terminal_get_line(i);
+    char *line = (char*)terminal_get_line(i);
     write_str(0, SCREEN_ROWS - 1 - i, line);
   }
   write_cute_str(SCREEN_COLS-6, 0, "DoomOS");

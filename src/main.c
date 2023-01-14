@@ -45,10 +45,10 @@ void kernel_main(void* multiboot_info_ptr){
   gdt_init(); 
   page_init();
   multiboot_init(multiboot_info_ptr);
-  interrupt_init();
   pit_init();
+  interrupt_init();
   kernel_welcome();
-  screen_refresh();
+  //screen_refresh();
   for (;;) {
     halt();
   }
