@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "kernel.h"
+#include "terminal.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -36,6 +37,12 @@ void uart_init()
   }
   uart = true;
   kprint("[UART] OK\r\n");
+}
+ 
+void uart_receive() {
+  while ((inb(COM1 + 5) & 1) == 1) {
+    terminal_rxchar(inb(COM1));
+  }
 }
 
 void

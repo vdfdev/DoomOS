@@ -1,5 +1,7 @@
 #include "kernel.h"
 #include "pit.h"
+#include "screen.h"
+#include "uart.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -79,6 +81,12 @@ void interrupt_irq_handle(uint32_t irq) {
   switch (irq) {
     case 0:
       pit_tick();
+      if (pit_ticks % 33 == 0) {
+          screen_refresh();
+      }
+      break;
+    case 4:
+      uart_receive();
       break;
     default:
       kprintf("UNHANDLED IRQ %u\r\n", irq);
@@ -113,7 +121,7 @@ void interrupt_irq_handle(uint32_t irq) {
       "sti\n" \
       "iret\n");
 
-void interrupt_exception_handle(uint32_t i, uint32_t eflags) {
+void interrupt_exception_handle(uint32_t i) {
   char* reason;
   switch (i) {
     case 0: reason = "Divide error"; break;

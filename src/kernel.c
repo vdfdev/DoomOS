@@ -24,10 +24,6 @@ uint32_t max(uint32_t a, uint32_t b) {
   }
 }
 
-uint32_t ticks() {
-  return pit_get_ticks();
-}
-
 void kputc(char c) {
   uart_putchar(c);
   terminal_putchar(c);

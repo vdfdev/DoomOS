@@ -68,11 +68,6 @@ void pit_tick()
   pit_ticks++;
 }
 
-uint32_t pit_get_ticks()
-{
-  return pit_ticks;
-}
-
 void pit_wait(uint32_t ms)
 {
   if (!interrupt_is_enabled()) {

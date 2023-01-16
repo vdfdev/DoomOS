@@ -38,6 +38,7 @@ void kernel_welcome() {
   kprint("\r\n");
   kprint("  -> Welcome to DoomOS! Learning About Operating System By Running DOOM <-\r\n");
   kprint("\r\n");
+  kprint("$ ");
 }
 
 void kernel_main(void* multiboot_info_ptr){
@@ -49,7 +50,6 @@ void kernel_main(void* multiboot_info_ptr){
   pit_init();
   interrupt_init();
   kernel_welcome();
-  screen_refresh();
   for (;;) {
     halt();
   }
