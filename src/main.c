@@ -42,13 +42,14 @@ void kernel_welcome() {
 
 void kernel_main(void* multiboot_info_ptr){
   uart_init();
+  screen_init();
   gdt_init(); 
   page_init();
   multiboot_init(multiboot_info_ptr);
   pit_init();
   interrupt_init();
   kernel_welcome();
-  //screen_refresh();
+  screen_refresh();
   for (;;) {
     halt();
   }

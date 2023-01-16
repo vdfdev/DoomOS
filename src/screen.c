@@ -36,6 +36,12 @@ void write_str(uint8_t x, uint8_t y, char* s) {
   }
 }
 
+void screen_init() {
+  clear_screen();
+  write_cute_str(0, 0, "DoomOS loading...");
+  kprint("[SCREEN] OK\r\n");
+}
+
 void screen_refresh() {
   clear_screen();
   for (uint16_t i = 0; i < max(terminal_line_count, SCREEN_ROWS); i++) {

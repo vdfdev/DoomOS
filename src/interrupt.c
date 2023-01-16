@@ -95,39 +95,83 @@ void interrupt_irq_handle(uint32_t irq) {
   asm(".globl interrupt_irq" #irq "\n" \
       "interrupt_irq" #irq ":\n" \
       "cli\n" \
-      "push $" #irq "\n" \
+      "pusha\n" \
+      "pushl %ds\n" \
+      "pushl %es\n" \
+      "pushl %fs\n" \
+      "pushl %gs\n" \
+      "pushl %ss\n" \
+      "pushl $" #irq "\n" \
       "call interrupt_irq_handle\n" \
-      "add  $4, %esp\n" \
+      "add $4, %esp\n" /* "popl irq" */ \
+      "add $4, %esp\n" /* "popl %ss" */ \
+      "popl %gs\n" \
+      "popl %fs\n" \
+      "popl %es\n" \
+      "popl %ds\n" \
+      "popa\n" \
       "sti\n" \
       "iret\n");
 
-#define FATAL_EXCEPTION_HANDLER(i, msg) \
-  static void interrupt_exception##i() {\
-    kprintf("FATAL EXCEPTION %u: %s\r\n", i, msg);\
-    asm volatile("cli; hlt" ::: "memory");\
+void interrupt_exception_handle(uint32_t i, uint32_t eflags) {
+  char* reason;
+  switch (i) {
+    case 0: reason = "Divide error"; break;
+    case 1: reason = "Debug exception"; break;
+    case 2: reason = "Nonmaskable interrupt"; break;
+    case 3: reason = "Breakpoint"; break;
+    case 4: reason = "Overflow"; break;
+    case 5: reason = "Bounds check"; break;
+    case 6: reason = "Illegal opcode"; break;
+    case 7: reason = "FPU exception"; break;
+    case 8: reason = "Double fault"; break;
+    case 9: reason = "Coprocessor segment overrun"; break;
+    case 10: reason = "Invalid TSS"; break;
+    case 11: reason = "Segment not present"; break;
+    case 12: reason = "Stack exception"; break;
+    case 13: reason = "General protection fault"; break;
+    case 14: reason = "Page fault"; break;
+    case 16: reason = "x87 FPU error"; break;
+    case 17: reason = "Alignment Check Exception"; break;
+    case 18: reason = "Machine-Check Exception"; break;
+    case 19: reason = "SIMD Floating-Point Exception"; break;
+    case 20: reason = "Virtualization Exception"; break;
+    case 21: reason = "Control Protection Exception"; break;
   }
+  kprintf("FATAL EXCEPTION %u: %s\r\n", i, reason);
+}
 
-FATAL_EXCEPTION_HANDLER(0, "Divide error")
-FATAL_EXCEPTION_HANDLER(1, "Debug exception")
-FATAL_EXCEPTION_HANDLER(2, "Nonmaskable interrupt")
-FATAL_EXCEPTION_HANDLER(3, "Breakpoint")
-FATAL_EXCEPTION_HANDLER(4, "Overflow")
-FATAL_EXCEPTION_HANDLER(5, "Bounds check")
-FATAL_EXCEPTION_HANDLER(6, "Illegal opcode")
-FATAL_EXCEPTION_HANDLER(7, "FPU exception")
-FATAL_EXCEPTION_HANDLER(8, "Double fault")
-FATAL_EXCEPTION_HANDLER(9, "Coprocessor segment overrun")
-FATAL_EXCEPTION_HANDLER(10, "Invalid TSS")
-FATAL_EXCEPTION_HANDLER(11, "Segment not present")
-FATAL_EXCEPTION_HANDLER(12, "Stack exception")
-FATAL_EXCEPTION_HANDLER(13, "General protection fault")
-FATAL_EXCEPTION_HANDLER(14, "Page fault")
-FATAL_EXCEPTION_HANDLER(16, "x87 FPU error")
-FATAL_EXCEPTION_HANDLER(17, "Alignment Check Exception")
-FATAL_EXCEPTION_HANDLER(18, "Machine-Check Exception")
-FATAL_EXCEPTION_HANDLER(19, "SIMD Floating-Point Exception")
-FATAL_EXCEPTION_HANDLER(20, "Virtualization Exception")
-FATAL_EXCEPTION_HANDLER(21, "Control Protection Exception")
+#define FATAL_EXCEPTION_HANDLER(i) \
+  void interrupt_exception##i(); \
+  asm(".globl interrupt_exception" #i "\n" \
+      "interrupt_exception" #i ":\n" \
+      "cli\n" \
+      "push $" #i "\n" \
+      "call interrupt_exception_handle\n" \
+      "add  $4, %esp\n" \
+      "hlt\n");
+
+FATAL_EXCEPTION_HANDLER(0)
+FATAL_EXCEPTION_HANDLER(1)
+FATAL_EXCEPTION_HANDLER(2)
+FATAL_EXCEPTION_HANDLER(3)
+FATAL_EXCEPTION_HANDLER(4)
+FATAL_EXCEPTION_HANDLER(5)
+FATAL_EXCEPTION_HANDLER(6)
+FATAL_EXCEPTION_HANDLER(7)
+FATAL_EXCEPTION_HANDLER(8)
+FATAL_EXCEPTION_HANDLER(9)
+FATAL_EXCEPTION_HANDLER(10)
+FATAL_EXCEPTION_HANDLER(11)
+FATAL_EXCEPTION_HANDLER(12)
+FATAL_EXCEPTION_HANDLER(13)
+FATAL_EXCEPTION_HANDLER(14)
+FATAL_EXCEPTION_HANDLER(16)
+FATAL_EXCEPTION_HANDLER(17)
+FATAL_EXCEPTION_HANDLER(18)
+FATAL_EXCEPTION_HANDLER(19)
+FATAL_EXCEPTION_HANDLER(20)
+FATAL_EXCEPTION_HANDLER(21)
 
 IRQ_HANDLER(0)
 IRQ_HANDLER(1)
