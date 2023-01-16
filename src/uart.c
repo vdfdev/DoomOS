@@ -1,6 +1,7 @@
 #include "uart.h"
 #include "kernel.h"
 #include <stdint.h>
+#include <stdbool.h>
 
 #define COM1    0x3f8
 
@@ -18,33 +19,22 @@ static inline __attribute__((always_inline)) uint8_t inb(uint16_t port)
     return ret;
 }
 
-static int uart;    // is there a uart?
+static bool uart = false;    // is there a uart?
 
 void uart_init()
 {
-
-  // Turn off the FIFO
-  outb(COM1+2, 0);
-
-  // 9600 baud, 8 data bits, 1 stop bit, parity off.
-  outb(COM1+3, 0x80);    // Unlock divisor
-  outb(COM1+0, 115200/115200);
-  outb(COM1+1, 0);
-  outb(COM1+3, 0x03);    // Lock divisor, 8 data bits.
-  outb(COM1+4, 0);
-  outb(COM1+1, 0x01);    // Enable receive interrupts.
-
-  // If status is 0xFF, no serial port.
-  if(inb(COM1+5) == 0xFF)
-      return;
-
-  uart = 1;
-
-  // Acknowledge pre-existing interrupt conditions;
-  // enable interrupts.
-  inb(COM1+2);
-  inb(COM1+0);
-
+  outb(COM1 + 1, 0x00);    // Disable all interrupts
+  outb(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+  outb(COM1 + 0, 115200/115200);    // Set divisor to 1 (lo byte) 115200 baud
+  outb(COM1 + 1, 0x00);    //                           (hi byte)
+  outb(COM1 + 3, 0x03);    // 8 bits, no parity, one stop bit, disable DLAB
+  outb(COM1 + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+  outb(COM1 + 4, 0x0F);
+  outb(COM1 + 1, 0x1); // Enable interrupts
+  if (inb(COM1+5) == 0xFF) {
+    return;
+  }
+  uart = true;
   kprint("[UART] OK\r\n");
 }
 

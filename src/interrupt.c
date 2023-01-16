@@ -279,6 +279,9 @@ void interrupt_init() {
   interrupt_idt_set_descriptor(IRQ_OFFSET + 13, interrupt_irq13); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 14, interrupt_irq14); 
   interrupt_idt_set_descriptor(IRQ_OFFSET + 15, interrupt_irq15);
+  // Clear all masks
+  outb(PIC1_DATA, 0);
+  outb(PIC2_DATA, 0);
   __asm__ volatile ("lidt %0" : : "m"(interrupt_idtr)); // load the new IDT
   interrupt_pic_remap();
   __asm__ volatile ("sti"); // set the interrupt flag  
